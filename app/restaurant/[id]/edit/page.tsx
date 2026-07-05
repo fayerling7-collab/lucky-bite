@@ -9,6 +9,9 @@ import { PageTransition } from '@/components/common/PageTransition';
 import { RestaurantForm } from '@/components/restaurant/RestaurantForm';
 import { useApp } from '@/lib/appStore';
 
+// Cloudflare Pages Edge Runtime 配置
+export const runtime = 'edge';
+
 export default function EditRestaurantPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();

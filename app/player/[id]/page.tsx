@@ -9,6 +9,9 @@ import { DynamicBackground } from '@/components/common/DynamicBackground';
 import { PlayerProfile } from '@/components/player/PlayerProfile';
 import { useApp } from '@/lib/appStore';
 
+// Cloudflare Pages Edge Runtime 配置
+export const runtime = 'edge';
+
 export default function PlayerProfilePage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();

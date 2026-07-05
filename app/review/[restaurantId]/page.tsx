@@ -14,6 +14,9 @@ import { computeFinalRating } from '@/lib/scoring';
 import type { NewReviewInput, Review } from '@/types';
 import { cuisineEmoji } from '@/components/restaurant/RestaurantCard';
 
+// Cloudflare Pages Edge Runtime 配置
+export const runtime = 'edge';
+
 export default function ReviewPage() {
   const router = useRouter();
   const params = useParams<{ restaurantId: string }>();
