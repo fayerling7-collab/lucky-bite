@@ -17,6 +17,7 @@ import { useApp } from '@/lib/appStore';
 import type { Restaurant, RestaurantFilter } from '@/types';
 import { getTodayBestRecommender } from '@/lib/ranking';
 import { cn } from '@/lib/utils';
+import { cuisineEmoji } from '@/components/restaurant/RestaurantCard';
 
 /** 首页游戏大厅 */
 export default function HomePage() {
@@ -181,18 +182,54 @@ export default function HomePage() {
           </motion.h1>
         </div>
 
-        {/* 今日最佳推荐人 */}
+        {/* 本月排行 */}
         {todayBest && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="flex items-center gap-2 rounded-full bg-white/60 px-3 py-1.5 backdrop-blur shadow-soft"
+            initial={{ opacity: 0, y: -10, scale: 0.9 }}
+            animate={{
+              opacity: 1,
+              y: 0,
+              scale: [1, 1.02, 1],
+            }}
+            transition={{
+              delay: 0.2,
+              scale: {
+                duration: 2,
+                repeat: Infinity,
+                ease: 'easeInOut',
+              },
+            }}
+            className="relative flex items-center gap-2.5 rounded-2xl bg-gradient-to-r from-butter/40 via-white/60 to-blush/40 px-4 py-2.5 backdrop-blur-md shadow-soft border border-white/50 overflow-hidden"
           >
-            <Trophy className="h-4 w-4 text-amber-500" />
-            <span className="text-xs text-slate-500">本月</span>
-            <span className="text-sm font-bold text-slate-700">{todayBest.nickname}</span>
-            <span className="text-xs font-bold text-amber-500">{todayBest.points}分</span>
+            {/* 微光动画背景 */}
+            <motion.div
+              animate={{
+                x: ['-100%', '200%'],
+              }}
+              transition={{
+                duration: 3,
+                repeat: Infinity,
+                ease: 'linear',
+              }}
+              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent w-1/2"
+            />
+            <motion.span
+              animate={{ rotate: [0, 10, -10, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+              className="text-lg relative z-10"
+            >
+              👑
+            </motion.span>
+            <span className="text-xs text-slate-500 relative z-10">本月</span>
+            <span className="text-sm font-bold text-slate-700 relative z-10">{todayBest.nickname}</span>
+            <motion.div
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 1, repeat: Infinity, ease: 'easeInOut' }}
+              className="flex items-center gap-1 relative z-10"
+            >
+              <Trophy className="h-3.5 w-3.5 text-amber-500" />
+              <span className="text-xs font-bold text-amber-500">{todayBest.points}分</span>
+            </motion.div>
           </motion.div>
         )}
 
@@ -316,38 +353,41 @@ export default function HomePage() {
                 <span className="text-xs text-slate-400">{poolRestaurants.length} 家</span>
               </div>
               <div className="flex gap-3 overflow-x-auto pb-3 no-scrollbar px-2">
-                {poolRestaurants.slice(0, 8).map((r, i) => (
-                  <motion.div
-                    key={r.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 + i * 0.05 }}
-                    className="flex-shrink-0 w-36"
-                  >
-                    <div
-                      onClick={() => handleSelectRestaurant(r)}
-                      className="cursor-pointer"
+                {poolRestaurants.slice(0, 8).map((r, i) => {
+                  const cardEmoji = cuisineEmoji(r.cuisine);
+                  return (
+                    <motion.div
+                      key={r.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.4 + i * 0.05 }}
+                      className="flex-shrink-0 w-36"
                     >
                       <div
-                        className={cn(
-                          'h-24 rounded-2xl bg-gradient-to-br flex items-center justify-center text-3xl border-2',
-                          i % 6 === 0 ? 'from-sky-soft/70 to-sky-deep/40 border-sky-soft/50'
-                            : i % 6 === 1 ? 'from-blush/70 to-coral/40 border-blush/50'
-                            : i % 6 === 2 ? 'from-mint/70 to-mint/40 border-mint/50'
-                            : i % 6 === 3 ? 'from-butter/70 to-butter/40 border-butter/50'
-                            : i % 6 === 4 ? 'from-lavender/70 to-lavender/40 border-lavender/50'
-                            : 'from-coral/70 to-blush/40 border-coral/50',
-                        )}
+                        onClick={() => handleSelectRestaurant(r)}
+                        className="cursor-pointer"
                       >
-                        {r.name.slice(0, 2)}
+                        <div
+                          className={cn(
+                            'h-24 rounded-2xl bg-gradient-to-br flex items-center justify-center text-4xl border-2',
+                            i % 6 === 0 ? 'from-sky-soft/70 to-sky-deep/40 border-sky-soft/50'
+                              : i % 6 === 1 ? 'from-blush/70 to-coral/40 border-blush/50'
+                              : i % 6 === 2 ? 'from-mint/70 to-mint/40 border-mint/50'
+                              : i % 6 === 3 ? 'from-butter/70 to-butter/40 border-butter/50'
+                              : i % 6 === 4 ? 'from-lavender/70 to-lavender/40 border-lavender/50'
+                              : 'from-coral/70 to-blush/40 border-coral/50',
+                          )}
+                        >
+                          {cardEmoji}
+                        </div>
+                        <div className="mt-1.5 px-1">
+                          <div className="text-xs font-bold text-slate-700 truncate">{r.name}</div>
+                          <div className="text-[10px] text-slate-500 truncate">{r.cuisine} · ¥{r.avgPrice}</div>
+                        </div>
                       </div>
-                      <div className="mt-1.5 px-1">
-                        <div className="text-xs font-bold text-slate-700 truncate">{r.name}</div>
-                        <div className="text-[10px] text-slate-500 truncate">{r.cuisine} · ¥{r.avgPrice}</div>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
+                    </motion.div>
+                  );
+                })}
               </div>
             </div>
           </div>

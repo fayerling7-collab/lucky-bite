@@ -45,6 +45,7 @@ export const restaurantRepository: RestaurantRepository = {
     const now = new Date().toISOString();
     const restaurant: Restaurant = {
       ...data,
+      district: data.district ?? '未设置',
       tags: data.tags ?? [],
       id: genId('r_'),
       experienced: false,

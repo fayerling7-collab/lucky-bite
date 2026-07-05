@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // 确保 Service Worker 和 manifest 正确配置
+  // Service Worker 和 manifest 的响应头配置
   async headers() {
     return [
       {

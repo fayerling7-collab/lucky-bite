@@ -77,7 +77,6 @@ export default function ReviewPage() {
       <DynamicBackground />
       <PageTransition>
         <div className="relative z-10 mx-auto max-w-4xl px-4 py-6 safe-top safe-bottom">
-          {/* 顶部栏 */}
           <div className="mb-6 flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => router.back()}>
               <ArrowLeft className="h-5 w-5" />
@@ -96,7 +95,6 @@ export default function ReviewPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
-            {/* 餐厅信息头部 */}
             <div className="mb-5 flex items-center gap-3 rounded-3xl bg-gradient-to-r from-sky-soft/60 to-lavender/50 p-4 shadow-soft backdrop-blur">
               <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/80 text-3xl shadow-soft">
                 {emoji}
@@ -136,7 +134,6 @@ export default function ReviewPage() {
         </div>
       </PageTransition>
 
-      {/* 去留决策弹窗 */}
       <KeepOrRemoveDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}

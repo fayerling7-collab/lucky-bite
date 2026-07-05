@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, ImageIcon, Search, Plus } from 'lucide-react';
+import { ArrowLeft, ImageIcon, Search, Plus, Link2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { DynamicBackground } from '@/components/common/DynamicBackground';
@@ -10,11 +10,12 @@ import { PageTransition } from '@/components/common/PageTransition';
 import { RestaurantForm } from '@/components/restaurant/RestaurantForm';
 import { RestaurantSearch } from '@/components/restaurant/RestaurantSearch';
 import { ImageUploader } from '@/components/restaurant/ImageUploader';
+import { DianpingLinkParser } from '@/components/restaurant/DianpingLinkParser';
 import type { SearchResultItem } from '@/components/restaurant/RestaurantSearch';
 import { useApp } from '@/lib/appStore';
 import type { NewRestaurantInput } from '@/types';
 
-type EntryMode = 'choice' | 'search' | 'image' | 'form';
+type EntryMode = 'choice' | 'search' | 'image' | 'form' | 'dianping';
 
 export default function NewRestaurantPage() {
   const router = useRouter();
@@ -45,6 +46,33 @@ export default function NewRestaurantPage() {
   };
 
   const handleImageRecognize = (result: {
+    name: string;
+    branchName: string;
+    cuisine: string;
+    district: string;
+    address: string;
+    businessHours: string;
+    supportsLunch: boolean;
+    supportsDinner: boolean;
+    avgPrice: number;
+  }) => {
+    setInitialData({
+      name: result.name,
+      branchName: result.branchName,
+      cuisine: result.cuisine,
+      district: result.district,
+      address: result.address,
+      businessHours: result.businessHours,
+      supportsLunch: result.supportsLunch,
+      supportsDinner: result.supportsDinner,
+      avgPrice: result.avgPrice,
+      recommenderId: currentPlayer?.id,
+      inPool: true,
+    });
+    setMode('form');
+  };
+
+  const handleDianpingParse = (result: {
     name: string;
     branchName: string;
     cuisine: string;
@@ -152,6 +180,20 @@ export default function NewRestaurantPage() {
 
                   <motion.button
                     whileTap={{ scale: 0.95 }}
+                    onClick={() => setMode('dianping')}
+                    className="mt-3 flex w-full items-center gap-4 rounded-3xl bg-gradient-to-r from-coral to-blush p-5 text-left transition hover:brightness-105"
+                  >
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/50">
+                      <Link2 className="h-7 w-7 text-coral" />
+                    </div>
+                    <div>
+                      <p className="text-lg font-bold text-slate-700">🔗 大众点评导入</p>
+                      <p className="mt-1 text-sm text-slate-500">粘贴分享链接一键导入收藏餐厅</p>
+                    </div>
+                  </motion.button>
+
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => handleManualCreate('')}
                     className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-white/50 p-4 font-medium text-slate-600 transition hover:bg-white/80"
                   >
@@ -193,6 +235,21 @@ export default function NewRestaurantPage() {
               >
                 <ImageUploader
                   onRecognize={handleImageRecognize}
+                  onCancel={handleBackToChoice}
+                />
+              </motion.div>
+            )}
+
+            {/* 大众点评导入模式 */}
+            {mode === 'dianping' && (
+              <motion.div
+                key="dianping"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+              >
+                <DianpingLinkParser
+                  onParse={handleDianpingParse}
                   onCancel={handleBackToChoice}
                 />
               </motion.div>

@@ -37,7 +37,7 @@ export interface NewRestaurantInput {
   name: string;
   branchName?: string;
   cuisine: string;
-  district: string;
+  district?: string;
   businessArea?: string;
   address: string;
   mapCoord?: MapCoord;

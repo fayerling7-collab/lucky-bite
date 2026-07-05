@@ -44,7 +44,6 @@ export default function PlayerProfilePage() {
       <DynamicBackground />
       <PageTransition>
         <div className="relative z-10 mx-auto max-w-4xl px-4 py-6 safe-top safe-bottom">
-          {/* 顶部栏 */}
           <div className="mb-6 flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => router.back()}>
               <ArrowLeft className="h-5 w-5" />

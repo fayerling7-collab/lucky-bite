@@ -48,7 +48,9 @@ export function RestaurantForm({
   });
 
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => setForm((f) => ({ ...f, [k]: v }));
-  const canSubmit = form.name.trim() && form.cuisine.trim() && form.district.trim() && form.address.trim() && form.businessHours.trim() && form.avgPrice > 0 && form.recommenderId && !submitting;
+  // 必填：餐厅名称、菜系、详细地址、营业时间、午市/晚市、推荐人
+  // 非必填：门店名称、所在地区、人均价格
+  const canSubmit = form.name.trim() && form.cuisine.trim() && form.address.trim() && form.businessHours.trim() && form.recommenderId && !submitting;
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
@@ -58,7 +60,7 @@ export function RestaurantForm({
         name: form.name.trim(),
         branchName: form.branchName.trim() || undefined,
         cuisine: form.cuisine.trim(),
-        district: form.district.trim(),
+        district: form.district.trim() || undefined,
         address: form.address.trim(),
         businessHours: form.businessHours.trim(),
         supportsLunch: form.supportsLunch,
@@ -86,32 +88,32 @@ export function RestaurantForm({
         <Field label="餐厅名称" required>
           <input className={inputCls} value={form.name} onChange={(e) => set('name', e.target.value)} placeholder="必填" />
         </Field>
-        <Field label="门店名称" required>
-          <input className={inputCls} value={form.branchName} onChange={(e) => set('branchName', e.target.value)} placeholder="如：静安寺店" />
+        <Field label="门店名称">
+          <input className={inputCls} value={form.branchName} onChange={(e) => set('branchName', e.target.value)} placeholder="选填，如：静安寺店" />
         </Field>
       </div>
 
       {/* 菜系 + 地区 */}
       <div className="grid grid-cols-2 gap-3">
         <Field label="菜系" required>
-          <input className={inputCls} list="cuisine-list" value={form.cuisine} onChange={(e) => set('cuisine', e.target.value)} placeholder="如：粤菜" />
+          <input className={inputCls} list="cuisine-list" value={form.cuisine} onChange={(e) => set('cuisine', e.target.value)} placeholder="必填，如：粤菜" />
           <datalist id="cuisine-list">
             {CUISINE_OPTIONS.map((c) => <option key={c} value={c} />)}
           </datalist>
         </Field>
-        <Field label="所在地区" required>
-          <input className={inputCls} value={form.district} onChange={(e) => set('district', e.target.value)} placeholder="如：静安区" />
+        <Field label="所在地区">
+          <input className={inputCls} value={form.district} onChange={(e) => set('district', e.target.value)} placeholder="选填，如：静安区" />
         </Field>
       </div>
 
       {/* 详细地址 */}
       <Field label="详细地址" required>
-        <input className={inputCls} value={form.address} onChange={(e) => set('address', e.target.value)} placeholder="如：上海市静安区南京西路1601号" />
+        <input className={inputCls} value={form.address} onChange={(e) => set('address', e.target.value)} placeholder="必填，如：上海市静安区南京西路1601号" />
       </Field>
 
       {/* 营业时间 */}
       <Field label="营业时间" required>
-        <input className={inputCls} value={form.businessHours} onChange={(e) => set('businessHours', e.target.value)} placeholder="如：11:00 - 22:00" />
+        <input className={inputCls} value={form.businessHours} onChange={(e) => set('businessHours', e.target.value)} placeholder="必填，如：11:00 - 22:00" />
       </Field>
 
       {/* 午市/晚市 + 人均 */}
@@ -123,10 +125,10 @@ export function RestaurantForm({
             <label className="flex items-center gap-2 text-sm font-medium text-slate-500"><Switch checked={form.supportsDinner} onCheckedChange={(v) => set('supportsDinner', v)} /> 晚市</label>
           </div>
         </div>
-        <Field label="人均价格" required>
+        <Field label="人均价格">
           <div className="relative">
             <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">¥</span>
-            <input type="number" min={0} className={inputCls} value={form.avgPrice} onChange={(e) => set('avgPrice', Number(e.target.value))} placeholder="0" />
+            <input type="number" min={0} className={inputCls} value={form.avgPrice} onChange={(e) => set('avgPrice', Number(e.target.value))} placeholder="选填" />
           </div>
         </Field>
       </div>

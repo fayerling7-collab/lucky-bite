@@ -13,6 +13,38 @@ const CUISINE_EMOJI: Record<string, string> = {
   咖啡: '☕', 甜品: '🍰', Brunch: '🍳', 下午茶: '🧁', 酒吧: '🍸',
 };
 
+// 食物关键词 → emoji 映射（按优先级排序，独特的在前）
+const FOOD_KEYWORD_EMOJI: Array<{ keyword: string; emoji: string }> = [
+  { keyword: '酸菜鱼', emoji: '🐟' },
+  { keyword: '酸菜', emoji: '🥬' },
+  { keyword: '火锅', emoji: '🍲' },
+  { keyword: '烧烤', emoji: '🔥' },
+  { keyword: '日料', emoji: '🍣' },
+  { keyword: '炸鸡', emoji: '🍗' },
+  { keyword: '奶茶', emoji: '🧋' },
+  { keyword: '咖啡', emoji: '☕' },
+  { keyword: '甜品', emoji: '🍰' },
+  { keyword: '小笼包', emoji: '🥟' },
+  { keyword: '饺子', emoji: '🥟' },
+  { keyword: '早茶', emoji: '🫖' },
+  { keyword: '点心', emoji: '🥧' },
+  { keyword: '汤面', emoji: '🍜' },
+  { keyword: '粥', emoji: '🥣' },
+  { keyword: '虾', emoji: '🦐' },
+  { keyword: '鱼', emoji: '🐟' },
+  { keyword: '牛', emoji: '🐂' },
+  { keyword: '羊', emoji: '🐑' },
+  { keyword: '鸡', emoji: '🐔' },
+  { keyword: '肉', emoji: '🥩' },
+  { keyword: '面', emoji: '🍜' },
+  { keyword: '饭', emoji: '🍚' },
+  { keyword: '蔬菜', emoji: '🥬' },
+  { keyword: '包', emoji: '🥟' },
+];
+
+// 品牌名称白名单：这些词不应作为食物关键词提取
+const BRAND_KEYWORDS = ['点都德', '太二', '喜茶', '奈雪', '星巴克', '麦当劳', '肯德基', '汉堡王', '必胜客'];
+
 // pastel 变体
 type PastelVariant = 'sky' | 'pink' | 'mint' | 'butter' | 'lavender' | 'coral';
 const VARIANTS: PastelVariant[] = ['sky', 'pink', 'mint', 'butter', 'lavender', 'coral'];
@@ -46,6 +78,39 @@ function hashVariant(id: string): PastelVariant {
 
 export function cuisineEmoji(cuisine: string): string {
   return CUISINE_EMOJI[cuisine] ?? '🍽️';
+}
+
+/**
+ * 从餐厅名称中提取智能标题
+ * 返回格式：关键词 + emoji（如果找到）
+ * 对于品牌名称（如点都德），返回完整品牌名 + 菜系emoji
+ */
+function extractSmartTitle(name: string, cuisine?: string): { keyword: string; emoji: string } | null {
+  // 检查是否是品牌名称，如果是，返回完整品牌名 + 菜系emoji
+  for (const brand of BRAND_KEYWORDS) {
+    if (name.includes(brand)) {
+      const cuisineEmojiForBrand = cuisine ? CUISINE_EMOJI[cuisine] : '🍽️';
+      return { keyword: brand, emoji: cuisineEmojiForBrand };
+    }
+  }
+
+  // 按优先级顺序查找食物关键词
+  for (const { keyword, emoji } of FOOD_KEYWORD_EMOJI) {
+    if (name.includes(keyword)) {
+      return { keyword, emoji };
+    }
+  }
+
+  // 如果没有找到食物关键词，返回餐厅名称前2个字 + 菜系emoji（但要确保是有意义的）
+  if (cuisine && name.length >= 2) {
+    const cuisineEmojiForCuisine = CUISINE_EMOJI[cuisine] || '🍽️';
+    // 如果名称超过4个字，显示完整名称作为标题
+    if (name.length <= 6) {
+      return { keyword: name, emoji: cuisineEmojiForCuisine };
+    }
+  }
+
+  return null;
 }
 
 interface RestaurantCardProps {
@@ -87,6 +152,7 @@ export function RestaurantCard({
 }: RestaurantCardProps) {
   const variant = hashVariant(restaurant.id);
   const emoji = restaurant.coverImage ? '' : cuisineEmoji(restaurant.cuisine);
+  const smartTitle = extractSmartTitle(restaurant.name, restaurant.cuisine);
 
   return (
     <motion.div
@@ -126,13 +192,23 @@ export function RestaurantCard({
 
       {/* 内容区 */}
       <div className="flex flex-col gap-2 p-4">
+        {/* 智能标题：视觉焦点 */}
+        {smartTitle && (
+          <div className="flex items-center gap-1.5">
+            <span className="text-xl">{smartTitle.emoji}</span>
+            <span className="text-sm font-semibold text-sky-deep">
+              {smartTitle.keyword}
+            </span>
+          </div>
+        )}
+
         <div className="flex items-start justify-between gap-2">
           <h3 className="line-clamp-1 text-base font-bold text-slate-700">
             {restaurant.name}
           </h3>
           {restaurant.officialRating ? (
-            <span className="flex shrink-0 items-center gap-0.5 text-xs font-bold text-amber-500">
-              <Star className="h-3 w-3 fill-current" />
+            <span className="flex shrink-0 items-center gap-0.5 text-sm font-bold text-amber-500">
+              <Star className="h-3.5 w-3.5 fill-current" />
               {restaurant.officialRating}
             </span>
           ) : null}
@@ -142,12 +218,12 @@ export function RestaurantCard({
           <p className="line-clamp-1 text-xs text-slate-400">{restaurant.branchName}</p>
         )}
 
-        <div className="flex items-center gap-2 text-xs text-slate-500">
-          <span className="rounded-full bg-sky-soft/20 px-2 py-0.5 font-medium text-sky-deep">
+        <div className="flex items-center gap-2 text-sm text-slate-500">
+          <span className="rounded-full bg-sky-soft/20 px-2.5 py-0.5 font-medium text-sky-deep">
             {restaurant.cuisine}
           </span>
           <span className="flex items-center gap-0.5">
-            <MapPin className="h-3 w-3" />
+            <MapPin className="h-3.5 w-3.5" />
             {restaurant.district}
           </span>
         </div>

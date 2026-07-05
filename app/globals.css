@@ -25,7 +25,7 @@ body {
 }
 
 body {
-  background: linear-gradient(135deg, #FFF8EC 0%, #FCE8F0 35%, #E8F4FC 70%, #F0E8FC 100%);
+  background: linear-gradient(135deg, #FFF0E8 0%, #FFD6E8 25%, #B8E4FC 50%, #D9C8F0 75%, #FFE8D8 100%);
   background-attachment: fixed;
   color: #5A4A52;
   font-feature-settings: 'palt';
@@ -146,4 +146,26 @@ html {
   flex-direction: column;
   min-height: 100vh;
   min-height: 100dvh;
+  background-color: #FFF8EC;
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  overscroll-behavior-y: none;
+}
+
+/* iOS standalone 模式下，避免链接打开新窗口 */
+@media (display-mode: standalone) {
+  html, body {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  /* 保留输入框可选择 */
+  input, textarea, [contenteditable] {
+    user-select: text;
+    -webkit-user-select: text;
+  }
 }
