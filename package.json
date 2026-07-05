@@ -8,8 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "pages:build": "npx @cloudflare/next-on-pages@1.11.0",
-    "preview": "npx wrangler pages dev .vercel/output/static --port 8788",
-    "deploy": "npm run pages:build && npx wrangler pages deploy .vercel/output/static --project-name=lucky-bite"
+    "preview": "npx wrangler pages dev .vercel/output/static --port 8788"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.2",
