@@ -1,0 +1,50 @@
+{
+  "name": "Lucky Bite - 幸运扭蛋美食",
+  "short_name": "Lucky Bite",
+  "description": "用扭蛋游戏帮朋友们决定今天吃什么，把每一次聚餐变成幸运抽取仪式",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FFF8EC",
+  "theme_color": "#A8D8F0",
+  "lang": "zh-CN",
+  "categories": ["food", "lifestyle", "social"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "新增餐厅",
+      "url": "/restaurant/new",
+      "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "排行榜",
+      "url": "/ranking",
+      "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "美食日记",
+      "url": "/diary",
+      "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192" }]
+    }
+  ]
+}
