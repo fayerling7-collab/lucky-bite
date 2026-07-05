@@ -41,10 +41,65 @@ const CUISINE_MAP: Record<string, string> = {
 
 // 上海区域关键词
 const DISTRICT_MAP: Record<string, string> = {
+  // 16 个区
   '静安': '静安区', '徐汇': '徐汇区', '长宁': '长宁区', '浦东': '浦东新区',
   '黄浦': '黄浦区', '虹口': '虹口区', '杨浦': '杨浦区', '普陀': '普陀区',
   '闵行': '闵行区', '宝山': '宝山区', '嘉定': '嘉定区', '松江': '松江区',
   '青浦': '青浦区', '奉贤': '奉贤区', '金山': '金山区', '崇明': '崇明区',
+  // 知名商圈/地区 → 所属区（黄浦区）
+  '淮海路': '黄浦区', '淮海中路': '黄浦区', '新天地': '黄浦区',
+  '南京东路': '黄浦区', '南京西路': '静安区', '人民广场': '黄浦区',
+  '豫园': '黄浦区', '老西门': '黄浦区', '打浦桥': '黄浦区',
+  '日月光': '黄浦区', '田子坊': '黄浦区', '思南路': '黄浦区',
+  '巨鹿路': '黄浦区', '茂名南路': '黄浦区',
+  // 静安区
+  '静安寺': '静安区', '大宁': '静安区',
+  '曹家渡': '静安区', '江宁路': '静安区', '恒隆': '静安区',
+  '久光': '静安区', '嘉里中心': '静安区',
+  // 徐汇区
+  '徐家汇': '徐汇区', '衡山路': '徐汇区', '淮海西路': '徐汇区',
+  '复兴中路': '徐汇区', '漕河泾': '徐汇区', '龙华': '徐汇区',
+  '上海图书馆': '徐汇区', '武康路': '徐汇区', '安福路': '徐汇区',
+  '建国西路': '徐汇区', '天钥桥路': '徐汇区', '美罗城': '徐汇区',
+  // 长宁区
+  '中山公园': '长宁区', '虹桥': '长宁区', '古北': '长宁区',
+  '天山': '长宁区', '新华路': '长宁区', '愚园路': '长宁区',
+  '龙之梦': '长宁区', '来福士': '长宁区',
+  // 浦东新区
+  '陆家嘴': '浦东新区', '张江': '浦东新区', '金桥': '浦东新区',
+  '世纪大道': '浦东新区', '八佰伴': '浦东新区', '联洋': '浦东新区',
+  '花木': '浦东新区', '三林': '浦东新区', '前滩': '浦东新区',
+  '后滩': '浦东新区', '世博': '浦东新区', '昌邑路': '浦东新区',
+  '国金': '浦东新区', '正大广场': '浦东新区',
+  // 普陀区
+  '甘泉': '普陀区', '甘泉地区': '普陀区', '长寿路': '普陀区',
+  '武宁路': '普陀区', '曹杨': '普陀区', '真如': '普陀区',
+  '长风': '普陀区', '环球港': '普陀区', '中山北路': '普陀区',
+  // 虹口区
+  '四川北路': '虹口区', '北外滩': '虹口区', '临平路': '虹口区',
+  '曲阳': '虹口区', '欧阳路': '虹口区',
+  // 杨浦区
+  '五角场': '杨浦区', '大学路': '杨浦区', '控江路': '杨浦区',
+  '四平路': '杨浦区', '江湾': '杨浦区', '万达': '杨浦区',
+  // 闵行区
+  '莘庄': '闵行区', '七宝': '闵行区', '虹桥天地': '闵行区',
+  '华漕': '闵行区', '梅陇': '闵行区', '吴泾': '闵行区',
+  // 宝山区
+  '顾村': '宝山区', '大华': '宝山区', '淞宝': '宝山区',
+  '共康': '宝山区',
+  // 松江区
+  '松江新城': '松江区', '大学城': '松江区', '九亭': '松江区',
+  // 嘉定区
+  '嘉定新城': '嘉定区', '南翔': '嘉定区', '安亭': '嘉定区',
+  // 青浦区
+  '青浦新城': '青浦区', '徐泾': '青浦区', '华新': '青浦区',
+  '赵巷': '青浦区',
+  // 奉贤区
+  '南桥': '奉贤区', '海湾': '奉贤区',
+  // 金山区
+  '金山新城': '金山区', '石化': '金山区',
+  // 崇明区
+  '城桥': '崇明区', '陈家镇': '崇明区',
 };
 
 // 从分享文本中直接提取餐厅信息
@@ -62,19 +117,27 @@ function parseDianpingShareText(text: string): DianpingParseResult | null {
   const bracketMatch = cleanedText.match(/【([^】]+)】/);
   if (bracketMatch) {
     const fullName = bracketMatch[1].trim();
-    // 分离主名称和分店名：(日月光店) → branchName
+    // 分离主名称和分店名：支持 (日月光店) 和 ，日月光店 两种格式
     const branchMatch = fullName.match(/^(.+?)[（(]([^）)]+?店?)[）)]$/);
     if (branchMatch) {
       name = branchMatch[1].trim();
       const branch = branchMatch[2].trim();
       branchName = branch.endsWith('店') ? branch : branch + '店';
     } else {
-      name = fullName;
+      const commaParts = fullName.split('，');
+      if (commaParts.length >= 2 && commaParts[1].trim().endsWith('店')) {
+        name = commaParts[0].trim();
+        branchName = commaParts[1].trim();
+      } else {
+        name = fullName;
+      }
     }
   }
 
-  // 2. 提取人均价格：¥98/人 或 人均98 或 98/人
-  const priceMatch = cleanedText.match(/[¥￥](\d+)\s*\/?\s*人/) || cleanedText.match(/人均[：:\s]*(\d+)/);
+  // 2. 提取人均价格：¥98/人 或 人均98 或 98每人 或 94每人
+  const priceMatch = cleanedText.match(/[¥￥](\d+)\s*\/?\s*人/) 
+    || cleanedText.match(/人均[：:\s]*(\d+)/)
+    || cleanedText.match(/(\d+)\s*每人/);
   if (priceMatch) {
     avgPrice = parseInt(priceMatch[1], 10);
   }
@@ -87,29 +150,101 @@ function parseDianpingShareText(text: string): DianpingParseResult | null {
     }
   }
 
-  // 4. 提取地址：包含"路"、"号"、"室"等关键词的行
+  // 4. 提取地址
   const lines = cleanedText.split('\n');
-  for (const line of lines) {
-    const trimmed = line.trim();
-    // 排除包含链接的行
-    if (trimmed.includes('http')) continue;
-    // 排除包含评分的行
-    if (trimmed.match(/[★☆✰]/) || trimmed.match(/^\d+\.\d+$/)) continue;
-    // 排除包含价格的行
-    if (trimmed.match(/[¥￥]\d+/) || trimmed.includes('人均')) continue;
 
-    // 匹配地址行：包含路、号、室、街、弄、幢等
-    if (trimmed.match(/[路号室街弄幢道]|广场|中心|大厦|商场|对面|楼上|楼下/)) {
-      // 清理地址中的多余信息
-      address = trimmed.replace(/^[地址：:、\s]+/, '').trim();
-      break;
+  // 判断一行是否包含菜系关键词
+  const hasCuisineKeyword = (text: string): boolean => {
+    for (const keyword of Object.keys(CUISINE_MAP)) {
+      if (text.includes(keyword)) return true;
+    }
+    return false;
+  };
+
+  // 判断一行是否像地址（包含地址特征）
+  const looksLikeAddress = (text: string): boolean => {
+    // 必须包含地址特征词
+    if (!text.match(/[路号室街弄幢道坊村园庭苑厦楼]/)) return false;
+    // 排除只有商圈名+菜系的组合（如"淮海路 西餐"）
+    // 如果行内只有2个词且第二个是菜系，那不是地址
+    const parts = text.split(/\s+/).filter(Boolean);
+    if (parts.length === 2 && hasCuisineKeyword(parts[1])) return false;
+    // 如果行内包含菜系词且整体很短，可能是商圈+菜系
+    if (hasCuisineKeyword(text) && text.length < 15) return false;
+    return true;
+  };
+
+  // 4a. 优先：从"地址"关键词后提取
+  const addressKeywordMatch = cleanedText.match(/地址[：:、\s]*([^\n]+)/);
+  if (addressKeywordMatch) {
+    let addrText = addressKeywordMatch[1].trim();
+    const fieldEndMatch = addrText.match(/^(.*?)(?:[，,]\s*(?:电话|营业|时间|交通|地铁|公交|停车|brunch|点单|截止|$))/);
+    if (fieldEndMatch && fieldEndMatch[1].trim()) {
+      address = fieldEndMatch[1].trim();
+    } else {
+      address = addrText;
     }
   }
 
-  // 5. 提取区域
-  for (const [keyword, value] of Object.entries(DISTRICT_MAP)) {
-    if (cleanedText.includes(keyword)) {
-      district = value;
+  // 4b. 次优先：找包含门牌号（数字+号）的行
+  if (!address) {
+    for (let i = 0; i < lines.length; i++) {
+      const trimmed = lines[i].trim();
+      if (trimmed.includes('http')) continue;
+      if (trimmed.match(/[★☆✰]/) || trimmed.match(/^\d+\.\d+$/)) continue;
+      if (trimmed.match(/[¥￥]\d+/) || trimmed.includes('人均')) continue;
+      if (i === 0) continue;
+
+      // 有门牌号（数字+号）且像地址
+      if (trimmed.match(/\d+号/) && looksLikeAddress(trimmed)) {
+        // 清理括号内多余信息（保留地标参考）
+        address = trimmed.replace(/^[地址：:、\s]+/, '').trim();
+        // 去掉括号内非地址信息（如brunch点单时间...）
+        address = address.replace(/[（(][^）)]*(?:brunch|点单|时间|截止|营业|电话)[^）)]*[）)]/g, '').trim();
+        break;
+      }
+    }
+  }
+
+  // 4c. 回退：找看起来像地址的行
+  if (!address) {
+    for (let i = 0; i < lines.length; i++) {
+      const trimmed = lines[i].trim();
+      if (trimmed.includes('http')) continue;
+      if (trimmed.match(/[★☆✰]/) || trimmed.match(/^\d+\.\d+$/)) continue;
+      if (trimmed.match(/[¥￥]\d+/) || trimmed.includes('人均')) continue;
+      if (i === 0) continue;
+      if (hasCuisineKeyword(trimmed)) continue;
+
+      if (looksLikeAddress(trimmed)) {
+        address = trimmed.replace(/^[地址：:、\s]+/, '').trim();
+        break;
+      }
+    }
+  }
+
+  // 5. 提取区域：最长匹配优先，避免路名误判
+  const districtKeywords = Object.keys(DISTRICT_MAP).sort((a, b) => b.length - a.length);
+  // 提取商圈行（一般在菜系行前面，格式：商圈 菜系）
+  const businessAreaLine = lines.find((l) => {
+    const trimmed = l.trim();
+    if (trimmed.includes('http') || trimmed.match(/[★☆✰¥￥]/) || trimmed.includes('人均')) return false;
+    // 商圈+菜系行的特征：有菜系关键词且不长
+    if (!hasCuisineKeyword(trimmed)) return false;
+    return trimmed.length < 20;
+  });
+  const lineToSearch = businessAreaLine || cleanedText;
+  for (const keyword of districtKeywords) {
+    // 确保匹配的是区域名，不是地址中的路名
+    // 如果关键词以"路"结尾且出现在地址行，跳过
+    if (keyword.endsWith('路') && businessAreaLine) {
+      // 在商圈行中匹配是安全的
+      if (businessAreaLine.includes(keyword)) {
+        district = DISTRICT_MAP[keyword];
+        break;
+      }
+    } else if (lineToSearch.includes(keyword)) {
+      district = DISTRICT_MAP[keyword];
       break;
     }
   }
@@ -126,7 +261,14 @@ function parseDianpingShareText(text: string): DianpingParseResult | null {
           const branch = branchMatch[2].trim();
           branchName = branch.endsWith('店') ? branch : branch + '店';
         } else {
-          name = cleanName;
+          // 支持中文逗号分隔：温州牛肉馆，镇平路店
+          const commaParts = cleanName.split('，');
+          if (commaParts.length >= 2 && commaParts[1].trim().endsWith('店')) {
+            name = commaParts[0].trim();
+            branchName = commaParts[1].trim();
+          } else {
+            name = cleanName;
+          }
         }
       }
     }

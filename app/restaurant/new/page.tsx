@@ -23,6 +23,11 @@ export default function NewRestaurantPage() {
   const [mode, setMode] = useState<EntryMode>('choice');
   const [initialData, setInitialData] = useState<Partial<NewRestaurantInput> | null>(null);
 
+  const getDefaultRecommenderId = () => {
+    const systemPlayer = players.find((p) => p.id === 'system_default');
+    return systemPlayer?.id || currentPlayer?.id || '';
+  };
+
   const handleSelectBranch = (branch: SearchResultItem) => {
     setInitialData({
       name: branch.name,
@@ -34,7 +39,7 @@ export default function NewRestaurantPage() {
       supportsLunch: branch.supportsLunch,
       supportsDinner: branch.supportsDinner,
       avgPrice: branch.avgPrice,
-      recommenderId: currentPlayer?.id,
+      recommenderId: getDefaultRecommenderId(),
       inPool: true,
     });
     setMode('form');
@@ -66,7 +71,7 @@ export default function NewRestaurantPage() {
       supportsLunch: result.supportsLunch,
       supportsDinner: result.supportsDinner,
       avgPrice: result.avgPrice,
-      recommenderId: currentPlayer?.id,
+      recommenderId: getDefaultRecommenderId(),
       inPool: true,
     });
     setMode('form');
@@ -93,15 +98,19 @@ export default function NewRestaurantPage() {
       supportsLunch: result.supportsLunch,
       supportsDinner: result.supportsDinner,
       avgPrice: result.avgPrice,
-      recommenderId: currentPlayer?.id,
+      recommenderId: getDefaultRecommenderId(),
       inPool: true,
     });
     setMode('form');
   };
 
   const handleSubmit = async (data: NewRestaurantInput) => {
-    await addRestaurant(data);
-    router.push('/');
+    try {
+      await addRestaurant(data);
+      router.push('/');
+    } catch (err: any) {
+      alert(err?.message || '添加失败，请重试');
+    }
   };
 
   const handleCancel = () => {
@@ -269,7 +278,7 @@ export default function NewRestaurantPage() {
                   recommenders={players}
                   onSubmit={handleSubmit}
                   onCancel={handleCancel}
-                  defaultRecommenderId={currentPlayer?.id}
+                  defaultRecommenderId={getDefaultRecommenderId()}
                 />
               </motion.div>
             )}

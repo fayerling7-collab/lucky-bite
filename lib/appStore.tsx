@@ -89,6 +89,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     // 首次启动：写入种子餐厅 + 默认积分规则
     if (restaurants.length === 0 && players.length === 0) {
       const now = new Date().toISOString();
+      // 系统默认推荐人（代表"早就存在"的餐厅，非特定玩家推荐）
+      const systemPlayer: Player = {
+        id: 'system_default',
+        nickname: '系统推荐',
+        avatar: '🍽',
+        joinedAt: now,
+        points: 0,
+        level: 1,
+        badges: [],
+        recommendCount: 0,
+        experiencedCount: 0,
+        championCount: 0,
+        favoriteRestaurantIds: [],
+      };
+      await playerRepository.create(systemPlayer);
+      // 初始玩家
       const seedPlayer: Player = {
         id: genId('p_'),
         nickname: '凌公主',
@@ -105,26 +121,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       await playerRepository.create(seedPlayer);
       for (const seed of SEED_RESTAURANTS) {
         await restaurantRepository.create({
-          name: seed.name,
-          branchName: seed.branchName,
-          cuisine: seed.cuisine,
-          district: seed.district,
-          businessArea: seed.businessArea,
-          address: seed.address,
-          mapCoord: seed.mapCoord,
-          businessHours: seed.businessHours,
-          supportsLunch: seed.supportsLunch,
-          supportsDinner: seed.supportsDinner,
-          avgPrice: seed.avgPrice,
-          officialRating: seed.officialRating,
-          recommenderId: seedPlayer.id,
-          recommendSource: seed.recommendSource,
-          recommendReason: seed.recommendReason,
-          tags: seed.tags,
-          note: seed.note,
-          inPool: seed.inPool,
-          coverImage: seed.coverImage,
-          photos: seed.photos,
+          ...seed,
+          recommenderId: systemPlayer.id,
+          inPool: seed.inPool ?? true,
         });
       }
       await scoringRuleRepository.ensureSeed();
@@ -199,14 +198,26 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const addRestaurant = useCallback(
     async (data: NewRestaurantInput): Promise<Restaurant> => {
+      // 检查扭蛋池中是否已有同名+同分店的餐厅
+      const existing = state.restaurants.find(
+        (r) =>
+          r.inPool &&
+          r.name === data.name &&
+          ((!r.branchName && !data.branchName) || r.branchName === data.branchName),
+      );
+      if (existing) {
+        throw new Error(
+          `扭蛋池中已存在同名餐厅：${data.name}${data.branchName ? `（${data.branchName}）` : ''}，不能重复添加`,
+        );
+      }
       const r = await restaurantRepository.create(data);
-      if (data.recommenderId) {
+      if (data.recommenderId && data.recommenderId !== 'system_default') {
         await playerRepository.incrementRecommend(data.recommenderId);
       }
       setState((s) => ({ ...s, restaurants: [...s.restaurants, r] }));
       return r;
     },
-    [],
+    [state.restaurants],
   );
 
   const updateRestaurant = useCallback(
