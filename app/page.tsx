@@ -434,7 +434,7 @@ export default function HomePage() {
               recommender={recommenderForResult}
               onAgain={handleAgain}
               onDetail={handleDetailFromResult}
-              onReview={() => router.push(`/review/${resultRestaurant.id}`)}
+              onReview={() => router.push(`/review?restaurantId=${resultRestaurant.id}`)}
               onKeep={() => setShowResult(false)}
               onRemove={() => handleRemoveFromPool(resultRestaurant.id)}
             />
@@ -448,14 +448,14 @@ export default function HomePage() {
         recommender={recommenderForDetail}
         onClose={() => setDetailRestaurant(null)}
         onEdit={() =>
-          detailRestaurant && router.push(`/restaurant/${detailRestaurant.id}/edit`)
+          detailRestaurant && router.push(`/restaurant/edit?id=${detailRestaurant.id}`)
         }
         onDelete={() => detailRestaurant && handleDelete(detailRestaurant.id)}
         onFavorite={() =>
           detailRestaurant && toggleFavorite(detailRestaurant.id)
         }
         onReview={() =>
-          detailRestaurant && router.push(`/review/${detailRestaurant.id}`)
+          detailRestaurant && router.push(`/review?restaurantId=${detailRestaurant.id}`)
         }
         isFavorite={isFavorite}
       />

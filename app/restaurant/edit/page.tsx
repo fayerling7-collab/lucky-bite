@@ -1,25 +1,24 @@
 'use client';
 
-import { useRouter, useParams } from 'next/navigation';
+import { Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { PageTransition } from '@/components/common/PageTransition';
 import { DynamicBackground } from '@/components/common/DynamicBackground';
-import { PlayerProfile } from '@/components/player/PlayerProfile';
+import { PageTransition } from '@/components/common/PageTransition';
+import { RestaurantForm } from '@/components/restaurant/RestaurantForm';
 import { useApp } from '@/lib/appStore';
 
-// Cloudflare Pages Edge Runtime 配置
-export const runtime = 'edge';
-
-export default function PlayerProfilePage() {
+function EditRestaurantContent() {
   const router = useRouter();
-  const params = useParams<{ id: string }>();
-  const { players, restaurants, reviews, diary } = useApp();
+  const searchParams = useSearchParams();
+  const id = searchParams.get('id') || '';
+  const { restaurants, players, updateRestaurant } = useApp();
 
-  const player = players.find((p) => p.id === params.id);
+  const restaurant = restaurants.find((r) => r.id === id);
 
-  if (!player) {
+  if (!restaurant) {
     return (
       <div className="relative min-h-screen min-h-[100dvh]">
         <DynamicBackground />
@@ -29,18 +28,23 @@ export default function PlayerProfilePage() {
               <Button variant="ghost" size="icon" onClick={() => router.back()}>
                 <ArrowLeft className="h-5 w-5" />
               </Button>
-              <h1 className="text-xl font-bold text-slate-700">玩家资料 👤</h1>
+              <h1 className="text-xl font-bold text-slate-700">编辑餐厅 ✏️</h1>
             </div>
             <div className="rounded-3xl bg-white/60 p-10 text-center backdrop-blur shadow-soft">
               <p className="text-4xl mb-3">😕</p>
-              <p className="font-bold text-slate-600">玩家不存在</p>
-              <p className="text-sm text-slate-400 mt-1">这位玩家可能已离开小队</p>
+              <p className="font-bold text-slate-600">餐厅不存在</p>
+              <p className="text-sm text-slate-400 mt-1">这家餐厅可能已被删除</p>
             </div>
           </div>
         </PageTransition>
       </div>
     );
   }
+
+  const handleSubmit = async (data: any) => {
+    await updateRestaurant(id, data);
+    router.back();
+  };
 
   return (
     <div className="relative min-h-screen min-h-[100dvh]">
@@ -56,7 +60,7 @@ export default function PlayerProfilePage() {
               animate={{ opacity: 1, y: 0 }}
               className="text-xl font-bold text-slate-700"
             >
-              玩家资料 👤
+              编辑餐厅 ✏️
             </motion.h1>
           </div>
 
@@ -65,15 +69,23 @@ export default function PlayerProfilePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <PlayerProfile
-              player={player}
-              restaurants={restaurants}
-              reviews={reviews}
-              diary={diary}
+            <RestaurantForm
+              initial={restaurant}
+              recommenders={players}
+              onSubmit={handleSubmit}
+              onCancel={() => router.back()}
             />
           </motion.div>
         </div>
       </PageTransition>
     </div>
+  );
+}
+
+export default function EditRestaurantPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><p className="text-slate-400">加载中...</p></div>}>
+      <EditRestaurantContent />
+    </Suspense>
   );
 }

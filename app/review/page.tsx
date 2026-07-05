@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { Suspense, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Utensils, JapaneseYen } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -14,18 +14,16 @@ import { computeFinalRating } from '@/lib/scoring';
 import type { NewReviewInput, Review } from '@/types';
 import { cuisineEmoji } from '@/components/restaurant/RestaurantCard';
 
-// Cloudflare Pages Edge Runtime 配置
-export const runtime = 'edge';
-
-export default function ReviewPage() {
+function ReviewContent() {
   const router = useRouter();
-  const params = useParams<{ restaurantId: string }>();
+  const searchParams = useSearchParams();
+  const restaurantId = searchParams.get('restaurantId') || '';
   const { restaurants, addReview, finalizeExperience, removeRestaurantFromPool } = useApp();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [submittedReview, setSubmittedReview] = useState<Review | null>(null);
   const [finalRating, setFinalRating] = useState(0);
 
-  const restaurant = restaurants.find((r) => r.id === params.restaurantId);
+  const restaurant = restaurants.find((r) => r.id === restaurantId);
 
   if (!restaurant) {
     return (
@@ -60,15 +58,15 @@ export default function ReviewPage() {
 
   const handleKeep = async () => {
     if (submittedReview) {
-      await finalizeExperience(params.restaurantId, [submittedReview]);
+      await finalizeExperience(restaurantId, [submittedReview]);
       router.push('/diary');
     }
   };
 
   const handleRemove = async () => {
     if (submittedReview) {
-      await removeRestaurantFromPool(params.restaurantId);
-      await finalizeExperience(params.restaurantId, [submittedReview]);
+      await removeRestaurantFromPool(restaurantId);
+      await finalizeExperience(restaurantId, [submittedReview]);
       router.push('/');
     }
   };
@@ -146,5 +144,13 @@ export default function ReviewPage() {
         onRemove={handleRemove}
       />
     </div>
+  );
+}
+
+export default function ReviewPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><p className="text-slate-400">加载中...</p></div>}>
+      <ReviewContent />
+    </Suspense>
   );
 }

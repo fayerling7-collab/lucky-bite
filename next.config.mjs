@@ -1,25 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // Service Worker 和 manifest 的响应头配置
-  async headers() {
-    return [
-      {
-        source: '/sw.js',
-        headers: [
-          { key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' },
-          { key: 'Service-Worker-Allowed', value: '/' },
-        ],
-      },
-      {
-        source: '/manifest.webmanifest',
-        headers: [
-          { key: 'Content-Type', value: 'application/manifest+json' },
-        ],
-      },
-    ];
-  },
+  // 静态导出模式，用于 Cloudflare Pages 直接托管
+  output: 'export',
+  // 静态导出时禁用图片优化（无服务端运行时）
   images: {
+    unoptimized: true,
     remotePatterns: [
       { protocol: 'https', hostname: '**' },
     ],
